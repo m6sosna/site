@@ -1,0 +1,194 @@
+/* Переопределение стилей для кнопок */
+.folder-name {
+  color: #5A3E36; /* Коричневый */
+}
+
+.btn-primary {
+  background-color: #D35400; /* Оранжевый */
+  border-color: #8E2600; /* Темно-оранжевый */
+}
+
+.btn-primary:hover {
+  background-color: #E67E22; /* Светлее оранжевый */
+  border-color: #8E2600;
+}
+
+.btn-primary:disabled {
+  background-color: #A68A6D; /* Светло-коричневый */
+  border-color: #A68A6D;
+}
+
+.btn-primary:focus {
+  background-color: #FFB84D; /* Золотисто-оранжевый */
+  outline: none;
+  box-shadow: 0 0 0 0.2rem #8E2600; /* Темно-оранжевая тень */
+}
+
+.btn-primary:active {
+  background-color: #D35400 !important;
+  box-shadow: 0 0 0 0.2rem #8E2600;
+}
+
+.btn-danger {
+  background-color: #7B241C; /* Бордовый */
+  border-color: #5C1B15; /* Темный бордовый */
+}
+.btn-secondary{
+  background-color: #A68A6D; /* Светло-коричневый */
+  border-color: #A68A6D;
+}
+.btn-secondary:hover {
+  background-color: #FFB84D; /* Золотисто-оранжевый */
+  outline: none;
+  box-shadow: 0 0 0 0.2rem #8E2600; /* Темно-оранжевая тень */
+}
+
+
+.btn-danger:hover {
+  background-color: #943126; /* Светлее бордовый */
+  border-color: #5C1B15;
+}
+
+.progress-bar {
+  background-color: #D35400; /* Оранжевый */
+  border-radius: 15px;
+  transition: width 0.6s ease;
+}
+
+.badge-primary {
+  background-color: #D35400;
+  border-color: #D35400;
+}
+
+.badge-danger {
+  background-color: #7B241C;
+  border-color: #7B241C;
+}
+
+.card {
+  border: 2px solid #D35400;
+}
+
+.card-header {
+  background-color: #D35400;
+  color: white;
+}
+
+.modal-header {
+  background-color: #D35400;
+  color: white;
+}
+
+.nav-pills {
+  background-color: white;
+  color: black;
+  --bs-nav-pills-link-active-bg: #D35400;
+}
+
+.menu:hover, .menu.active {
+  background-color: #D35400;
+  color: white;
+}
+
+.menu.nav-link {
+  color: #5A3E36;
+}
+
+.menu.nav-link:hover {
+  background-color: #D35400;
+  color: white;
+}
+
+.nav-item.active {
+  background-color: #D35400;
+}
+
+.custom-navbar {
+  background-color: #7B241C; /* Бордовый фон */
+}
+
+.custom-navbar .navbar-nav .nav-link {
+  color: #F7DC6F; /* Золотистый */
+}
+
+.custom-navbar .navbar-nav .nav-link:hover {
+  color: #FAD7A0; /* Светло-золотистый */
+}
+
+.custom-navbar .navbar-nav .nav-link.active {
+  color: #D35400; /* Оранжевый */
+}
+
+.custom-navbar .navbar-brand {
+  color: #F7DC6F; /* Золотистый */
+}
+
+.custom-navbar .navbar-toggler {
+  border-color: #F7DC6F;
+}
+
+.custom-navbar .navbar-toggler-icon {
+  background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3E%3Cpath stroke='rgba%28111, 61, 31, 1%29' stroke-width='2' linecap='round' linejoin='round' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E");
+}
+
+.footer {
+  background-color: #7B241C; /* Бордовый */
+}
+.list-group-item.active{
+  background-color: #ec6c17;
+  color: white;
+  border-color: #ec6c17;
+}
+.page-background {
+  background-image: url('\фон3.jpg'); /* Путь к изображению */
+  background-size: cover; /* Покрывает всю область */
+  margin-top: 0;
+  background-repeat: no-repeat; /* Изображение не повторяется */
+  background-position: center; /* Центрируем изображение */
+  height: 87vh; /* Высота 100% от высоты окна */
+  width: 100%; /* Ширина на всю страницу */
+}
+.milk-bg {
+  background-color: #fff8e7; /* Молочный фон */
+  border-radius: 8px;        /* Скругленные углы */
+  padding: 10px;             /* Внутренний отступ */
+}
+.custom-breadcrumb-link {
+  color: #17a2b8; /* Основной цвет, например, голубой */
+  font-weight: bold; /* Полужирный шрифт */
+  text-decoration: none; /* Убираем стандартное подчеркивание */
+  transition: color 0.3s ease; /* Эффект при наведении */
+
+  /* Для лучшей кликабельности */
+  cursor: pointer;
+}
+
+.custom-breadcrumb-link:hover {
+  color: #0d6efd; /* Цвет при наведении */
+  text-decoration: underline; /* Подчеркивание при наведении */
+}
+
+.welcome-container {
+  margin-top: 40px;
+  padding: 40px;
+  border-radius: 10px;
+
+  margin-bottom: 20px;
+}
+
+.welcome-title {
+  font-size: 1.6rem;
+  line-height: 1.6;
+  color: #333;
+  text-align: center;
+  font-family: 'Arial', sans-serif;
+}
+
+.welcome-title br {
+  margin-bottom: 20px; /* Отступ после каждого абзаца */
+}
+
+.welcome-container h2 {
+  margin: 0;
+  font-weight: normal;
+}
