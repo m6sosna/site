@@ -15,4 +15,4 @@ RUN chmod +x start.sh
 WORKDIR /ksite/backend/src
 
 # Запускаем start.sh
-CMD ["./start.sh"]
+CMD ["/ksite/start.sh"]
