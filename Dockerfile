@@ -1,15 +1,21 @@
 FROM python:3.12.1
 
+# Создаем рабочую папку
 RUN mkdir /fastapi_app
 WORKDIR /fastapi_app
 
+# Устанавливаем зависимости
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
+# Копируем проект
 COPY . .
 
-RUN alembic upgrade head
+# Даем права на выполнение скрипта запуска
+RUN chmod +x start.sh
 
-WORKDIR src
+# Переключаем рабочую папку в src
+WORKDIR /fastapi_app/src
 
-CMD gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+# Запускаем через скрипт
+CMD ["../start.sh"]
