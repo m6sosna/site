@@ -2,7 +2,7 @@ FROM python:3.12.1
 
 # Создаем рабочую директорию внутри контейнера
 RUN mkdir /backend
-WORKDIR /backend/src
+WORKDIR /backend
 
 # Копируем зависимости и устанавливаем
 COPY requirements.txt .
