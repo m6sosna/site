@@ -12,6 +12,7 @@ COPY . .
 
 # Делаем start.sh исполняемым
 RUN chmod +x start.sh
+WORKDIR /ksite/backend/src
 
 # Запускаем start.sh
 CMD ["./start.sh"]
