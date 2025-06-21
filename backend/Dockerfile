@@ -1,15 +1,15 @@
 FROM python:3.12.1
 
-RUN mkdir /fastapi_app
-WORKDIR /fastapi_app
+WORKDIR /backend/src
 
 COPY requirements.txt .
-RUN pip install -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
 
-RUN alembic upgrade head
+RUN chmod +x start.sh
 
-WORKDIR src
+WORKDIR /backend
 
-CMD gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+
+CMD ["sh", "../start.sh"]
