@@ -1,10 +1,8 @@
 #!/bin/bash
-
-# Выход при ошибке любой команды
 set -e
 
-# Прогоняем миграции
-alembic -c /backend/src/alembic.ini upgrade head
+# Запускаем миграции с правильным путем к ini (в src)
+alembic -c ./alembic.ini upgrade head
 
-# Запускаем сервер
+# Запускаем приложение (main.py в src)
 gunicorn main:app --workers 1 --worker-class uvicorn.workers.UvicornWorker --bind 0.0.0.0:8000
