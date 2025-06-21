@@ -9,5 +9,7 @@ COPY . .
 
 RUN chmod +x start.sh
 
+WORKDIR /backend
+
 
 CMD ["sh", "../start.sh"]
