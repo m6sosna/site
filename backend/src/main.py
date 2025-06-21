@@ -1,4 +1,5 @@
 from fastapi import Depends, FastAPI, HTTPException
+from fastapi.staticfiles import StaticFiles
 from auth.users import fastapi_users, auth_backend
 from auth.schemas import UserCreate, UserRead, UserUpdate
 from fastapi.middleware.cors import CORSMiddleware
@@ -10,9 +11,13 @@ from file.file_router import router as file_router
 from anons.router import router as anons_router
 app = FastAPI()
 
+origins = [
+    "http://localhost:3000",  # адрес твоего фронтенда
+]
 app.add_middleware(
+    
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  
+    allow_origins=origins,  # или ["*"] для всех источников (не рекомендуется на проде)
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,6 +28,13 @@ app.include_router(
 app.include_router(
     anons_router
 )
+@app.get("/download-book")
+async def download_book():
+    path = "static/book.docx"
+    return FileResponse(path, media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document', filename="book.docx")
+@app.get("/")
+async def serve_index():
+    return FileResponse(os.path.join("build", "index.html"))
 
 
 
@@ -45,15 +57,4 @@ app.include_router(auth_router, prefix="/customusers", tags=["reg"])
 @app.get("/")
 async def root():
     return {"message": "Testing your app"}
-UPLOAD_DIRECTORY = "uploads/"  # Например, 'uploads/' 
 
-# @app.get("/files/{file_name}")
-# async def download_file(file_name: str):
-#     file_path = os.path.join(UPLOAD_DIRECTORY, file_name)
-    
-#     # Проверка на существование файла
-#     if not os.path.isfile(file_path):
-#         raise HTTPException(status_code=404, detail="Файл не найден")
-    
-#     # Возврат файла в ответе
-#     return FileResponse(file_path, media_type="application/octet-stream", filename=file_name)

@@ -4,7 +4,7 @@ import { Container } from 'react-bootstrap';
 const Footer = () => (
     <footer className=" py-3 text-white text-center footer ">
         <Container >
-            <p>sosnovskaaanuta@gmail.com</p>
+            <p>dmitrievaoa@cspu.ru</p>
         </Container>
     </footer>
 );

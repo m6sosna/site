@@ -5,7 +5,6 @@ import { UserContext } from "../../context/UserContext";
 import ErrorMessage from "../ErrorMessage";
 import RegisterModal from "./RegisterModal";
 import { FaEyeSlash, FaEye } from "react-icons/fa";
-import { notifyError, notifySuccess, notifyWarn } from "../Notification";
 
 const LoginModal = ({ active, handleModal }) => {
   const [email, setEmail] = useState("");
@@ -31,13 +30,13 @@ const LoginModal = ({ active, handleModal }) => {
     const emailValidationResult = validateEmail(email);
     if (emailValidationResult) {
       setEmailError(emailValidationResult);
-      notifyWarn(emailValidationResult);
+
       return;
     }
 
     if (!password) {
       setPasswordError("Введите пароль");
-      notifyWarn("Введите пароль");
+
       return;
     }
 
@@ -60,7 +59,6 @@ const LoginModal = ({ active, handleModal }) => {
       if (!response.ok) {
         if (data.detail === "LOGIN_BAD_CREDENTIALS") {
           setErrorMessage("Ошибка логина или пароля");
-          notifyError("Ошибка логина или пароля");
         } else {
           setErrorMessage(data.detail);
         }
@@ -70,7 +68,6 @@ const LoginModal = ({ active, handleModal }) => {
       }
     } catch (error) {
       setErrorMessage("Ошибка отправки запроса");
-      notifyError("Ошибка запроса");
     } finally {
       setLoading(false);
     }

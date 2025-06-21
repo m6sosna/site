@@ -140,13 +140,14 @@
   border-color: #ec6c17;
 }
 .page-background {
-  background-image: url('\фон3.jpg'); /* Путь к изображению */
+  background-image: url('\фон3.jpeg'); /* Путь к изображению */
   background-size: cover; /* Покрывает всю область */
   margin-top: 0;
   background-repeat: no-repeat; /* Изображение не повторяется */
   background-position: center; /* Центрируем изображение */
   height: 87vh; /* Высота 100% от высоты окна */
   width: 100%; /* Ширина на всю страницу */
+  
 }
 .milk-bg {
   background-color: #fff8e7; /* Молочный фон */
@@ -191,4 +192,43 @@
 .welcome-container h2 {
   margin: 0;
   font-weight: normal;
+}
+/* Стили для выпадающего меню */
+.navbar .dropdown-menu {
+  background-color: #7B241C; /* Бордовый фон */
+  border: 1px solid #5C1B15; /* Темный бордовый для границы */
+  border-radius: 5px;
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15); /* Тень для меню */
+}
+
+.navbar .dropdown-item {
+  color: #F7DC6F; /* Золотистый текст */
+  padding: 10px 20px;
+  font-size: 1rem;
+}
+
+.navbar .dropdown-item:hover {
+  background-color: #D35400; /* Оранжевый фон при наведении */
+  color: white; /* Белый текст при наведении */
+  cursor: pointer;
+}
+
+.navbar .dropdown-item.active, .navbar .dropdown-item:focus {
+  background-color: #FFB84D; /* Золотисто-оранжевый фон для активного элемента */
+  color: #7B241C; /* Бордовый текст для активного элемента */
+}
+
+.navbar .dropdown-toggle {
+  color: #F7DC6F; /* Золотистый текст */
+  font-size: 1.2rem;
+  border: none;
+  background: none;
+}
+
+.navbar .dropdown-toggle:hover {
+  color: #FFB84D; /* Золотисто-оранжевый текст при наведении */
+}
+
+.navbar .dropdown-divider {
+  background-color: #5C1B15; /* Темный бордовый для разделителей */
 }

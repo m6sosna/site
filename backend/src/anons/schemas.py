@@ -5,6 +5,8 @@ from fastapi_users import schemas
 class AnonsCreate(BaseModel):
     content: str
     attachment: Optional[str] = None  # Поле для хранения пути или URL файла
+    creator_id: int
+
 
 # Схема для обновления анонса
 class AnonsUpdate(BaseModel):
@@ -16,6 +18,7 @@ class AnonsRead(BaseModel):
     id: int
     content: str
     attachment: Optional[str] = None
+    creator_id: int 
 
     class Config:
         orm_mode = True

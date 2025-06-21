@@ -1,8 +1,9 @@
 import os
+from pathlib import Path
 import shutil
-from fastapi import APIRouter, Depends, File, Form, HTTPException, Query, UploadFile
+from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile
 from fastapi.responses import FileResponse
-from fastapi.staticfiles import StaticFiles
+
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
 from typing import List, Optional
@@ -10,7 +11,8 @@ from config import UPLOAD_DIRECTORY
 from .models import anons  # Импорт модели анонсов
 from .schemas import AnonsCreate, AnonsRead  # Импорт схем
 from auth.database import get_async_session  # Функция для получения сессии базы данных
-
+from auth.models import User
+from auth.users import current_active_user
 router = APIRouter(
     prefix="/anons",
     tags=["Anons"]
@@ -18,15 +20,18 @@ router = APIRouter(
 
 
 # Создание нового анонса
-@router.post("/anonses/", response_model=AnonsRead)
+@router.post("/anonses/", response_model=AnonsCreate)
 async def create_anons(
     content: str = Form(...),
     attachment: UploadFile = File(None),
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
 ):
-    new_anons = anons(content=content)
+    new_anons = anons(
+        content=content,
+        creator_id=current_user.id
+    )
 
-    # Сохранение файла, если он прикреплен
     if attachment:
         file_path = os.path.join(UPLOAD_DIRECTORY, attachment.filename)
         with open(file_path, "wb") as buffer:
@@ -37,15 +42,15 @@ async def create_anons(
     await db.commit()
     await db.refresh(new_anons)
     return new_anons
-
 # Обновление существующего анонса
 @router.put("/anonses/{anons_id}", response_model=AnonsRead)
 async def update_anons(
     anons_id: int,
     content: Optional[str] = Form(None),
     attachment: UploadFile = File(None),
-    delete_attachment: bool = Form(False),  # Изменение Query на Form
-    db: AsyncSession = Depends(get_async_session)
+    delete_attachment: bool = Form(False),
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user),
 ):
     result = await db.execute(select(anons).where(anons.id == anons_id))
     anons_obj = result.scalars().first()
@@ -53,28 +58,29 @@ async def update_anons(
     if not anons_obj:
         raise HTTPException(status_code=404, detail="Anons not found")
 
+    # Проверка прав на редактирование
+    if anons_obj.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="You are not allowed to edit this anons.")
+
     if content:
         anons_obj.content = content
 
-    current_file_path = (
-    os.path.join(UPLOAD_DIRECTORY, anons_obj.attachment) 
-    if anons_obj.attachment and not anons_obj.attachment.startswith(UPLOAD_DIRECTORY) 
-    else anons_obj.attachment
-)
-    print(f"Current file path: {current_file_path}")
-    print(f"Delete attachment flag: {delete_attachment}")
-    print(f"New attachment provided: {attachment is not None}")
+    # Определяем текущий путь к файлу
+    if anons_obj.attachment:
+        attachment_path = Path(UPLOAD_DIRECTORY / anons_obj.attachment)
+        if not attachment_path.is_relative_to(UPLOAD_DIRECTORY):
+            attachment_path = UPLOAD_DIRECTORY / anons_obj.attachment
+    else:
+        attachment_path = None
 
-    if (delete_attachment or attachment) and current_file_path:
-        if os.path.exists(current_file_path):
-            print(f"Deleting file: {current_file_path}")
-            os.remove(current_file_path)
-            anons_obj.attachment = None
-        else:
-            print(f"File not found at path: {current_file_path}")
+    # Удаление вложения
+    if (delete_attachment or attachment) and attachment_path and attachment_path.exists():
+        attachment_path.unlink()
+        anons_obj.attachment = None
 
+    # Сохранение нового файла
     if attachment:
-        new_file_path = os.path.join(UPLOAD_DIRECTORY, attachment.filename)
+        new_file_path = UPLOAD_DIRECTORY / attachment.filename
         with open(new_file_path, "wb") as buffer:
             shutil.copyfileobj(attachment.file, buffer)
         anons_obj.attachment = attachment.filename
@@ -82,6 +88,10 @@ async def update_anons(
     await db.commit()
     await db.refresh(anons_obj)
     return anons_obj
+
+
+
+
 # Удаление анонса
 @router.delete("/anonses/{anons_id}", response_model=dict)
 async def delete_anons(anons_id: int, db: AsyncSession = Depends(get_async_session)):

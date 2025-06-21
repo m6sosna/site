@@ -2,16 +2,16 @@
   text-align: center;
 }
 
-/* .App-logo {
+.App-logo {
   height: 40vmin;
   pointer-events: none;
-} */
+}
 
-/* @media (prefers-reduced-motion: no-preference) {
+@media (prefers-reduced-motion: no-preference) {
   .App-logo {
     animation: App-logo-spin infinite 20s linear;
   }
-} */
+}
 
 .App-header {
   background-color: #c9a328;
@@ -27,6 +27,25 @@
 .App-link {
   color: #61dafb;
 }
+.footer {
+  background-color: #7B241C; /* Бордовый */
+  color: white;
+  text-align: center;
+  padding: 10px;
+  flex-shrink: 0; /* Футер не сжимается */
+}
+.page-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh; /* Высота страницы */
+}
+
+.main-content {
+  flex: 1 1 auto; /* Основной контент заполняет оставшуюся высоту */
+  display: flex;
+  overflow: hidden;
+}
+
 
 /* @keyframes App-logo-spin {
   from {

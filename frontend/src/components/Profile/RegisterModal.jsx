@@ -3,7 +3,6 @@ import Modal from "react-bootstrap/Modal";
 import { Button, Form, Container, Spinner, InputGroup } from "react-bootstrap";
 import ErrorMessage from "../ErrorMessage";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
-import { notifyError, notifySuccess } from "../Notification";
 
 
 const RegisterModal = ({ olymp_id, active, handleModal }) => {
@@ -31,10 +30,7 @@ const RegisterModal = ({ olymp_id, active, handleModal }) => {
     setPassword("");
     setConfirmationPassword("");
     setName("");
-    setTeamMembers([
-      { name: "", lastname: "", surname: "" },
-      { name: "", lastname: "", surname: "" },
-    ]);
+    
     setErrorMessage("");
     setOrganisation("");
     setLastname("");
@@ -43,7 +39,7 @@ const RegisterModal = ({ olymp_id, active, handleModal }) => {
     setShowConfirmPassword(false);
     setShowPassword(false);
     setFieldErrors({});
-    setTeamName("");
+ 
   };
 
   const closeForm = () => {
@@ -51,28 +47,7 @@ const RegisterModal = ({ olymp_id, active, handleModal }) => {
     clearForm();
   };
 
-  const toggleRegistrationType = () => {
-    setIsTeamRegistration(!isTeamRegistration);
-    clearForm();
-  };
 
-  const addTeamMember = () => {
-    if (teamMembers.length < 5) {
-      setTeamMembers([...teamMembers, { name: "", lastname: "", surname: "" }]);
-    }
-  };
-
-  const removeTeamMember = (index) => {
-    if (teamMembers.length > 2) {
-      setTeamMembers(teamMembers.filter((_, i) => i !== index));
-    }
-  };
-
-  const handleTeamMemberChange = (index, field, value) => {
-    const newTeamMembers = [...teamMembers];
-    newTeamMembers[index][field] = value;
-    setTeamMembers(newTeamMembers);
-  };
   const validatePassword = (password, confirmationPassword) => {
     const minLength = 8;
     const hasUpperCase = /[A-Z]/.test(password);
@@ -184,7 +159,7 @@ const RegisterModal = ({ olymp_id, active, handleModal }) => {
     setLoading(true);
     const errors = validateFields();
     if (Object.keys(errors).length > 0) {
-      notifyError("Ошибки заполнения.")
+
       setFieldErrors(errors);
       setLoading(false);
       return;
@@ -215,15 +190,15 @@ const RegisterModal = ({ olymp_id, active, handleModal }) => {
 
       if (!response.ok) {
         const data = await response.json();
-        notifyError(data.detail || "Ошибка регистрации");
+       
         setErrorMessage(data.detail || "Ошибка регистрации");
       } else {
         handleModal();
         clearForm();
-        notifySuccess("Успешная регистрация!");
+       
       }
     } catch (error) {
-      notifyError("Ошибка запроса")
+      
       setErrorMessage("Ошибка запроса")
     } finally {
       setLoading(false);

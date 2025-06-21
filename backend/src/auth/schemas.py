@@ -11,7 +11,7 @@ class UserRead(schemas.BaseUser[int]):
     lastname: Optional[str] = ""
     surname: Optional[str] = ""
     role_id: int
-    # role_name: str
+    
     organisation: str
     is_active: bool = True
     is_superuser: bool = False
@@ -20,31 +20,19 @@ class UserRead(schemas.BaseUser[int]):
     class Config:
         orm_mode = True
 
-
 class UserCreate(schemas.BaseUserCreate):
     name: str
     lastname:str
     surname: str
     email: str
     password: str
-    role_id: Optional[int] = 1
+    role_id: Optional[int] = 2
     organisation: str
     is_active: Optional[bool] = True
     is_superuser: Optional[bool] = False
     is_verified: Optional[bool] = False
 
-    
-# class TeamUserCreate(schemas.BaseUserCreate):
-#     name: str
-#     lastname: Optional[str] = None
-#     surname: Optional[str] = None
-#     email: str
-#     password: str
-#     role_id: int
-#     # organisation: str
-#     is_active: Optional[bool] = True
-#     is_superuser: Optional[bool] = False
-#     is_verified: Optional[bool] = False
+
 class SoloUserRegister(schemas.BaseUserCreate):
     name: str
     lastname: Optional[str] = None
@@ -58,19 +46,6 @@ class SoloUserRegister(schemas.BaseUserCreate):
     is_verified: Optional[bool] = False
 
 
-# class TeamUserRegister(schemas.BaseUserCreate):
-#     name: str
-#     lastname: Optional[str] = None
-#     surname: Optional[str] = None
-#     email: str
-#     password: str
-#     role_id: Optional[int] = 1
-#     organisation: str
-#     is_active: Optional[bool] = True
-#     is_superuser: Optional[bool] = False
-#     is_verified: Optional[bool] = False
-#     olymp_id: int
-#     members: List[TeamMembersCreate]
 
 class UserUpdate(schemas.BaseUserUpdate):
     name: str
@@ -78,8 +53,7 @@ class UserUpdate(schemas.BaseUserUpdate):
     surname:str
     password: Optional[str] = None
     role_id: int
-    # organisation: str
-    # members: Optional[List[TeamMembersUpdate]] = None
+   
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False
@@ -89,8 +63,7 @@ class SelfUserUpdate(schemas.BaseUserUpdate):
     lastname: Optional[str] = None
     surname:Optional[str] = None
     password: Optional[str] = None
-    # organisation: Optional[str] = None
-    # members: Optional[List[TeamMembersUpdate]] = None
+   
     is_active: bool = True
     is_superuser: bool = False
     is_verified: bool = False

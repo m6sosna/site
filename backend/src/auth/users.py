@@ -49,15 +49,7 @@ class UserManager(IntegerIDMixin, BaseUserManager[User, int]):
         self, user: User, token: str, request: Optional[Request] = None
     ):
         print(f"Verification requested for user {user.id}. Verification token: {token}")
-        
-        # message = MessageSchema(
-        #     subject="Verify your email",
-        #     recipients=[user.email],
-        #     body=f"Please verify your email by clicking on the following link: http://localhost:8000/auth/verify?token={token}",
-        #     subtype="html"
-        # )
-        # fm = FastMail(conf)
-        # await fm.send_message(message)
+
 async def get_user_manager(user_db: SQLAlchemyUserDatabase = Depends(get_user_db)):
     yield UserManager(user_db)
 

@@ -10,7 +10,7 @@ import Footer from './components/Footer';
 import 'react-quill/dist/quill.snow.css';
 import "react-quill/dist/quill.core.css";
 import "react-quill/dist/quill.bubble.css";
-import Notification from './components/Notification';
+
 import MaterialsPage from './Pages/MaterialPage';
 
 function App() {
@@ -19,7 +19,7 @@ function App() {
       <Router>
         <UserProvider>
           <Header />
-          <Notification/>
+     
           <div className='page-background'>
             <Routes>
               <Route exact path="/" element={<Home />} />

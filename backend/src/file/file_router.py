@@ -1,31 +1,28 @@
-from datetime import datetime, time
+from datetime import datetime
 from sqlite3 import IntegrityError
 from fastapi import APIRouter, Form, HTTPException
 from fastapi.responses import FileResponse
 from fastapi import APIRouter, UploadFile, File, Depends, HTTPException
-from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
+from fastapi import Depends, HTTPException, status
+from auth.models import User
 from .models import File as FileModel, Folder
-from sqlalchemy import insert
 from auth.database import get_async_session
 import os
 import logging
-from base import Base
 from . import crud, models, schemas
 from typing import List
-import shutil
-from .schemas import  DeleteResponse
+from .schemas import  DeleteResponse, FolderContents, FolderUpdate
 from file.schemas import Folder as FolderSchema  
 from .models import Folder as FolderModel
 from sqlalchemy.orm import joinedload, selectinload
 import re
-import unicodedata
 from pathlib import Path
 from config import UPLOAD_DIRECTORY
+from auth.users import current_active_user
 
-from .crud import delete_folder_recursively, get_full_folder_path
+from .crud import get_full_folder_path
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -35,14 +32,11 @@ router = APIRouter(
 )
 
 def sanitize_folder_name(name: str) -> str:
-    """Удаляет недопустимые символы из имени папки."""
     return "".join(c for c in name if c.isalnum() or c in (' ', '_', '-')).strip()
 
 def sanitize_filename(filename: str) -> str:
-    # Заменяем недопустимые символы, но оставляем кириллицу и другие безопасные символы
-    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)  # Заменяем только запрещённые символы
-    filename = filename.replace(" ", "_")  # Заменяем пробелы на подчеркивания
-
+    filename = re.sub(r'[<>:"/\\|?*\x00-\x1F]', '_', filename)  
+    filename = filename.replace(" ", "_")  
     return filename
 
 
@@ -52,75 +46,77 @@ async def get_all_files(session: AsyncSession = Depends(get_async_session)):
     files = result.scalars().all()
     return files
 
-@router.post("/upload_files_to_folder")
-async def upload_files(
-    files: list[UploadFile] = File(...), 
-    folder_id: int = Form(...), 
-    db: AsyncSession = Depends(get_async_session)
-):
-    # Функция для формирования полного пути к папке
-    async def get_full_folder_path(folder_id: int, db: AsyncSession) -> str:
-        path_parts = []
-        current_folder_id = folder_id
+# @router.post("/upload_files_to_folder")
+# async def upload_files(
+#     files: list[UploadFile] = File(...), 
+#     folder_id: int = Form(...), 
+#     db: AsyncSession = Depends(get_async_session),
+#     current_user: User = Depends(current_active_user)
+# ):
+#     # Функция для формирования полного пути к папке
+#     async def get_full_folder_path(folder_id: int, db: AsyncSession) -> str:
+#         path_parts = []
+#         current_folder_id = folder_id
 
-        while current_folder_id:
-            query = select(FolderModel).where(FolderModel.id == current_folder_id)
-            result = await db.execute(query)
-            current_folder = result.scalar_one_or_none()
+#         while current_folder_id:
+#             query = select(FolderModel).where(FolderModel.id == current_folder_id)
+#             result = await db.execute(query)
+#             current_folder = result.scalar_one_or_none()
 
-            if not current_folder:
-                raise HTTPException(status_code=500, detail="Ошибка в структуре папок: папка не найдена")
+#             if not current_folder:
+#                 raise HTTPException(status_code=500, detail="Ошибка в структуре папок: папка не найдена")
             
-            path_parts.insert(0, current_folder.name)  # Добавляем имя папки в начало пути
-            current_folder_id = current_folder.parent_folder_id  # Переходим к родительской папке
+#             path_parts.insert(0, current_folder.name)  # Добавляем имя папки в начало пути
+#             current_folder_id = current_folder.parent_folder_id  # Переходим к родительской папке
 
-        base_path = os.path.join('D:\\', 'ksite', 'backend', 'src', 'uploads')
-        full_path = os.path.join(base_path, *path_parts)
-        return full_path
+#         base_path = os.path.join('D:\\', 'ksite', 'backend', 'src', 'uploads')
+#         full_path = os.path.join(base_path, *path_parts)
+#         return full_path
 
-    # Получаем полный путь к папке
-    folder_path = await get_full_folder_path(folder_id, db)
-    print(f"Путь к папке для сохранения файлов: {folder_path}")
+#     # Получаем полный путь к папке
+#     folder_path = await get_full_folder_path(folder_id, db)
+#     print(f"Путь к папке для сохранения файлов: {folder_path}")
 
-    try:
-        os.makedirs(folder_path, exist_ok=True)  # Создаем папку, если она не существует
-        print(f"Папка успешно создана: {folder_path}")
-    except Exception as e:
-        print(f"Ошибка при создании папки: {e}")
-        raise HTTPException(status_code=500, detail="Не удалось создать папку для загрузки файлов")
+#     try:
+#         os.makedirs(folder_path, exist_ok=True)  # Создаем папку, если она не существует
+#         print(f"Папка успешно создана: {folder_path}")
+#     except Exception as e:
+#         print(f"Ошибка при создании папки: {e}")
+#         raise HTTPException(status_code=500, detail="Не удалось создать папку для загрузки файлов")
 
-    uploaded_files_info = []
+#     uploaded_files_info = []
 
-    for file in files:
-        sanitized_filename = sanitize_filename(file.filename)
-        file_path = os.path.join(folder_path, sanitized_filename)
-        print(f"Сохраняем файл: {file_path}")
+#     for file in files:
+#         sanitized_filename = sanitize_filename(file.filename)
+#         file_path = os.path.join(folder_path, sanitized_filename)
+#         print(f"Сохраняем файл: {file_path}")
 
-        try:
-            content = await file.read()  # Чтение содержимого файла
-            with open(file_path, "wb") as f:
-                f.write(content)
-            print(f"Файл успешно сохранён: {file_path}")
-        except Exception as e:
-            print(f"Ошибка при сохранении файла {file_path}: {e}")
-            raise HTTPException(status_code=500, detail="Ошибка при сохранении файла")
+#         try:
+#             content = await file.read()  # Чтение содержимого файла
+#             with open(file_path, "wb") as f:
+#                 f.write(content)
+#             print(f"Файл успешно сохранён: {file_path}")
+#         except Exception as e:
+#             print(f"Ошибка при сохранении файла {file_path}: {e}")
+#             raise HTTPException(status_code=500, detail="Ошибка при сохранении файла")
 
-        # Вычисляем размер файла
-        file_size = len(content)
+#         # Вычисляем размер файла
+#         file_size = len(content)
 
-        # Сохраняем информацию о файле в базе данных
-        db_file = FileModel(
-            filename=sanitized_filename, 
-            file_path=file_path, 
-            folder_id=folder_id,
-            file_size=file_size
-        )
-        db.add(db_file)
-        uploaded_files_info.append({"filename": sanitized_filename, "file_path": file_path, "file_size": file_size})
+#         # Сохраняем информацию о файле в базе данных
+#         db_file = FileModel(
+#         filename=sanitized_filename, 
+#         file_path=file_path, 
+#         folder_id=folder_id,
+#         file_size=file_size,
+#         creator_id=current_user.id  # сохраняем создателя файла
+#     )
+#         db.add(db_file)
+#         uploaded_files_info.append({"filename": sanitized_filename, "file_path": file_path, "file_size": file_size})
 
-    await db.commit()
+#     await db.commit()
 
-    return {"message": "Файлы успешно загружены", "uploaded_files": uploaded_files_info}
+#     return {"message": "Файлы успешно загружены", "uploaded_files": uploaded_files_info}
 
 
 @router.get("/download/{file_id}")
@@ -176,47 +172,39 @@ async def download_file(file_id: int, db: AsyncSession = Depends(get_async_sessi
 
 
 
-@router.post("/folders/", response_model=schemas.Folder)
-async def create_folder(folder: schemas.FolderCreate, db: AsyncSession = Depends(get_async_session)):
-    sanitized_name = sanitize_folder_name(folder.name)
 
+@router.post("/folders/", response_model=schemas.Folder)
+async def create_folder(
+    folder: schemas.FolderCreate,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user),  
+):
+    sanitized_name = sanitize_folder_name(folder.name)
     parent_folder_path = UPLOAD_DIRECTORY
     parent_folder_id = None
-
     if folder.parent_folder_id:
         result = await db.execute(
             select(models.Folder).filter(models.Folder.id == folder.parent_folder_id)
         )
         parent_folder = result.scalars().first()
-
         if not parent_folder:
             raise HTTPException(status_code=404, detail="Parent folder not found.")
-
-        # Формируем путь к родительской папке
         parent_folder_path = UPLOAD_DIRECTORY / await get_full_folder_path(parent_folder, db)
         parent_folder_id = folder.parent_folder_id
-
-    # Формируем путь для новой папки
     folder_path = parent_folder_path / sanitized_name
-
-    # Обеспечиваем уникальность имени папки
     counter = 1
     unique_folder_path = folder_path
     while unique_folder_path.exists():
         unique_folder_path = folder_path.with_name(f"{sanitized_name}_{counter}")
         counter += 1
-
-    # Создаём папку на файловой системе
     unique_folder_path.mkdir(parents=True, exist_ok=True)
-
-    # Создаём запись в базе данных
     db_folder = models.Folder(
-        name=unique_folder_path.name,  # Сохраняем уникальное имя
+        name=unique_folder_path.name,
         parent_folder_id=parent_folder_id,
         created_at=datetime.utcnow(),
+        creator_id=current_user.id,  
     )
     db.add(db_folder)
-
     try:
         await db.commit()
         await db.refresh(db_folder)
@@ -225,21 +213,18 @@ async def create_folder(folder: schemas.FolderCreate, db: AsyncSession = Depends
         raise HTTPException(
             status_code=400, detail="Unable to create folder due to database constraints."
         )
-
-    # Загружаем папку с её файлами для ответа
     result = await db.execute(
         select(models.Folder).options(joinedload(models.Folder.files)).filter(models.Folder.id == db_folder.id)
     )
     db_folder = result.scalars().first()
-
     return schemas.Folder(
         id=db_folder.id,
         name=db_folder.name,
         created_at=db_folder.created_at,
         parent_folder_id=db_folder.parent_folder_id,
-        files=[schemas.File.from_orm(file) for file in db_folder.files]
+        files=[schemas.File.from_orm(file) for file in db_folder.files],
+        creator_id=db_folder.creator_id,
     )
-
 
 
 
@@ -247,12 +232,19 @@ async def create_folder(folder: schemas.FolderCreate, db: AsyncSession = Depends
 async def upload_files(
     files: list[UploadFile] = File(...), 
     folder_id: int = Form(...), 
-    db: AsyncSession = Depends(get_async_session)
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
 ):
+    query = select(FolderModel).where(FolderModel.id == folder_id)
+    result = await db.execute(query)
+    folder = result.scalar_one_or_none()
+    if not folder:
+        raise HTTPException(status_code=404, detail="Папка не найдена")
+    if folder.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Вы не являетесь создателем этой папки")
     async def get_full_folder_path(folder_id: int, db: AsyncSession) -> Path:
         path_parts = []
         current_folder_id = folder_id
-
         while current_folder_id:
             query = select(FolderModel).where(FolderModel.id == current_folder_id)
             result = await db.execute(query)
@@ -261,51 +253,32 @@ async def upload_files(
             if not current_folder:
                 raise HTTPException(status_code=500, detail="Ошибка в структуре папок: папка не найдена")
             
-            path_parts.insert(0, current_folder.name)  # Добавляем имя папки в начало пути
+            path_parts.insert(0, current_folder.name)
             current_folder_id = current_folder.parent_folder_id
-
-        return UPLOAD_DIRECTORY.joinpath(*path_parts)  # Используем Path для формирования пути
-
-    # Получаем полный путь к папке
+        return UPLOAD_DIRECTORY.joinpath(*path_parts)
     folder_path = await get_full_folder_path(folder_id, db)
-    print(f"Путь к папке для сохранения файлов: {folder_path}")
-
-    try:
-        folder_path.mkdir(parents=True, exist_ok=True)  # Создаем папку, если она не существует
-        print(f"Папка успешно создана: {folder_path}")
-    except Exception as e:
-        print(f"Ошибка при создании папки: {e}")
-        raise HTTPException(status_code=500, detail="Не удалось создать папку для загрузки файлов")
-
     uploaded_files_info = []
-
     for file in files:
         sanitized_filename = sanitize_filename(file.filename)
         file_path = folder_path / sanitized_filename
         print(f"Сохраняем файл: {file_path}")
-
         try:
             content = await file.read()
             with file_path.open("wb") as f:
                 f.write(content)
-            print(f"Файл успешно сохранён: {file_path}")
         except Exception as e:
-            print(f"Ошибка при сохранении файла {file_path}: {e}")
             raise HTTPException(status_code=500, detail="Ошибка при сохранении файла")
-
         file_size = len(content)
-
         db_file = FileModel(
             filename=sanitized_filename, 
             file_path=str(file_path), 
             folder_id=folder_id,
-            file_size=file_size
+            file_size=file_size,
+            creator_id=current_user.id
         )
         db.add(db_file)
         uploaded_files_info.append({"filename": sanitized_filename, "file_path": str(file_path), "file_size": file_size})
-
     await db.commit()
-
     return {"message": "Файлы успешно загружены", "uploaded_files": uploaded_files_info}
 
 
@@ -353,9 +326,31 @@ async def get_files_in_folder(folder_id: int, db: AsyncSession = Depends(get_asy
     return files
 
 
+# @router.delete("/delete_folder/{folder_id}", response_model=dict)
+# async def delete_folder(folder_id: int, db: AsyncSession = Depends(get_async_session)):
+#     # Находим папку в базе данных
+#     folder_query = select(Folder).where(Folder.id == folder_id)
+#     folder_result = await db.execute(folder_query)
+#     folder_entry = folder_result.scalar_one_or_none()
+
+#     if not folder_entry:
+#         raise HTTPException(status_code=404, detail="Папка не найдена")
+
+#     # Запускаем рекурсивное удаление
+#     await crud.delete_folder_recursively(folder_entry, db)
+
+#     # Сохраняем изменения в базе данных
+#     await db.commit()
+
+#     return {"message": "Папка и все её вложения успешно удалены"}
+
 @router.delete("/delete_folder/{folder_id}", response_model=dict)
-async def delete_folder(folder_id: int, db: AsyncSession = Depends(get_async_session)):
-    # Находим папку в базе данных
+async def delete_folder(
+    folder_id: int,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)  
+):
+
     folder_query = select(Folder).where(Folder.id == folder_id)
     folder_result = await db.execute(folder_query)
     folder_entry = folder_result.scalar_one_or_none()
@@ -363,49 +358,67 @@ async def delete_folder(folder_id: int, db: AsyncSession = Depends(get_async_ses
     if not folder_entry:
         raise HTTPException(status_code=404, detail="Папка не найдена")
 
-    # Запускаем рекурсивное удаление
+    if folder_entry.creator_id != current_user.id:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="У вас нет прав на удаление этой папки"
+        )
+
+
     await crud.delete_folder_recursively(folder_entry, db)
 
-    # Сохраняем изменения в базе данных
     await db.commit()
 
     return {"message": "Папка и все её вложения успешно удалены"}
-@router.get("/folders/{folder_id}/contents", response_model=schemas.FolderContents)
+
+
+
+
+@router.get("/files/folders/{folder_id}/contents", response_model=schemas.FolderContents)
 async def get_folder_contents(folder_id: int, db: AsyncSession = Depends(get_async_session)):
-    # Проверяем, существует ли папка
     result = await db.execute(
         select(FolderModel)
         .options(selectinload(FolderModel.files), selectinload(FolderModel.subfolders))
         .where(FolderModel.id == folder_id)
     )
-
     folder = result.scalar_one_or_none()
 
     if not folder:
         raise HTTPException(status_code=404, detail=f"Папка с id {folder_id} не найдена.")
 
-    # Формируем содержимое
-    files = [schemas.File(
-        id=file.id,
-        filename=file.filename,
-        file_size=file.file_size,
-        file_path=file.file_path,
-        folder_id=file.folder_id,
-        uploaded_at=file.uploaded_at
-    ) for file in folder.files]
+    files = [
+        schemas.File(
+            id=file.id,
+            filename=file.filename,
+            file_size=file.file_size,
+            file_path=file.file_path,
+            folder_id=file.folder_id,
+            uploaded_at=file.uploaded_at,
+            creator_id=file.creator_id
+        )
+        for file in folder.files
+    ]
 
-    subfolders = [schemas.Folder(
-        id=subfolder.id,
-        name=subfolder.name,
-        created_at=subfolder.created_at
-    ) for subfolder in folder.subfolders]
+    subfolders = [
+        schemas.Folder(
+            id=subfolder.id,
+            name=subfolder.name,
+            created_at=subfolder.created_at,
+            files=[],  # или subfolder.files если надо вложенные файлы сразу
+            parent_folder_id=subfolder.parent_folder_id,
+            creator_id=subfolder.creator_id
+        )
+        for subfolder in folder.subfolders
+    ]
 
     return schemas.FolderContents(
-        id=folder.id,
-        name=folder.name,
-        files=files,
-        subfolders=subfolders
-    )
+    id=folder.id,
+    name=folder.name,
+    parent_folder_id=folder.parent_folder_id,
+    creator_id=folder.creator_id,
+    files=files,
+    subfolders=subfolders
+)
 
 @router.get("/folders", response_model=list[FolderSchema])
 async def get_folders(db: AsyncSession = Depends(get_async_session)):
@@ -427,22 +440,100 @@ async def get_folders(db: AsyncSession = Depends(get_async_session)):
 
     return [FolderSchema.from_orm(folder) for folder in folders]
 
-@router.delete("/files/delete/{file_id}")
-async def delete_file(file_id: int, db: AsyncSession = Depends(get_async_session)):
-    # Используем select для асинхронного запроса
-    result = await db.execute(select(models.File).filter(models.File.id == file_id))
-    file = result.scalars().first()  # Получаем первый результат из запроса
+@router.delete("/files/delete/{file_id}", response_model=dict)
+async def delete_file(
+    file_id: int,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
+):
+    query = select(FileModel).where(FileModel.id == file_id)
+    result = await db.execute(query)
+    file = result.scalar_one_or_none()
 
     if not file:
-        raise HTTPException(status_code=404, detail=f"File with ID {file_id} not found")
-    
-    print(f"Deleting file with path: {file.file_path}")
-    
-    # Удаляем файл с диска
-    os.remove(file.file_path)
+        raise HTTPException(status_code=404, detail="Файл не найден")
 
-    # Удаляем файл из базы данных
+    if file.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Вы не можете удалить этот файл")
+
+    # Удаляем файл с диска
+    try:
+        os.remove(file.file_path)
+    except FileNotFoundError:
+        pass  # файл уже отсутствует
+
+    # Удаляем из базы
     await db.delete(file)
     await db.commit()
 
-    return {"detail": f"File with ID {file_id} deleted successfully"}
+    return {"message": "Файл успешно удалён"}
+
+
+# @router.put("/folders/{folder_id}")
+# async def update_folder_name(folder_id: int, folder_update: FolderUpdate, db: AsyncSession = Depends(get_async_session)):
+#     # Найти папку по ID
+#     folder = await db.execute(select(Folder).filter(Folder.id == folder_id))
+#     folder = folder.scalars().first()
+
+#     if not folder:
+#         raise HTTPException(status_code=404, detail="Папка не найдена")
+
+#     # Проверка на уникальность нового имени
+#     existing_folder = await db.execute(select(Folder).filter(Folder.name == folder_update.name))
+#     existing_folder = existing_folder.scalars().first()
+#     if existing_folder:
+#         raise HTTPException(status_code=400, detail="Папка с таким именем уже существует")
+
+#     # Получаем полный путь старой папки
+#     old_folder_path = await get_full_folder_path(folder, db)
+#     new_folder_path = os.path.join(os.path.dirname(old_folder_path), folder_update.name)  # Новый путь
+
+#     # Переименование папки в файловой системе
+#     try:
+#         os.rename(old_folder_path, new_folder_path)
+#     except OSError as e:
+#         raise HTTPException(status_code=500, detail=f"Ошибка переименования папки в файловой системе: {e}")
+
+#     # Обновление имени папки в базе данных
+#     folder.name = folder_update.name
+#     await db.commit()
+#     await db.refresh(folder)
+
+#     return {"message": "Имя папки успешно обновлено", "folder": {"id": folder.id, "name": folder.name}}
+@router.put("/folders/{folder_id}")
+async def update_folder_name(
+    folder_id: int,
+    folder_update: FolderUpdate,
+    db: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(current_active_user)
+):
+    folder = await db.execute(select(Folder).filter(Folder.id == folder_id))
+    folder = folder.scalars().first()
+
+    if not folder:
+        raise HTTPException(status_code=404, detail="Папка не найдена")
+
+    # Проверка владельца
+    if folder.creator_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Вы не являетесь владельцем этой папки")
+
+    # Проверка уникальности
+    existing_folder = await db.execute(select(Folder).filter(Folder.name == folder_update.name))
+    existing_folder = existing_folder.scalars().first()
+    if existing_folder:
+        raise HTTPException(status_code=400, detail="Папка с таким именем уже существует")
+
+    # Переименование
+    old_folder_path = await get_full_folder_path(folder, db)
+    new_folder_path = os.path.join(os.path.dirname(old_folder_path), folder_update.name)
+
+    try:
+        os.rename(old_folder_path, new_folder_path)
+    except OSError as e:
+        raise HTTPException(status_code=500, detail=f"Ошибка переименования: {e}")
+
+    folder.name = folder_update.name
+    await db.commit()
+    await db.refresh(folder)
+
+    return {"message": "Имя папки успешно обновлено", "folder": {"id": folder.id, "name": folder.name}}
