@@ -12,4 +12,4 @@ RUN chmod +x start.sh
 
 WORKDIR /fastapi_app/src
 
-CMD ["../start.sh"]
+CMD ["sh", "../start.sh"]
