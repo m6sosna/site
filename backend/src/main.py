@@ -37,7 +37,7 @@ async def serve_index():
     return FileResponse(os.path.join("build", "index.html"))
 
 
-
+app.mount("/", StaticFiles(directory="build", html=True), name="frontend")
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
