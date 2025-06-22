@@ -1,9 +1,9 @@
 # Этап 1: собираем фронт
 FROM node:18 AS frontend-builder
-WORKDIR /frontend/src
+WORKDIR /ksite/frontend
 COPY frontend/package*.json ./
 RUN npm install
-COPY frontend/ ./
+COPY frontend/src ./
 RUN npm run build
 
 FROM python:3.12.1
