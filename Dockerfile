@@ -1,4 +1,5 @@
 FROM python:3.12.1
+
 ARG DB_HOST
 ARG DB_PORT
 ARG DB_NAME
@@ -10,6 +11,8 @@ ENV DB_PORT=${DB_PORT}
 ENV DB_NAME=${DB_NAME}
 ENV DB_USER=${DB_USER}
 ENV DB_PASS=${DB_PASS}
+
+
 RUN mkdir /ksite
 
 WORKDIR /ksite
@@ -18,9 +21,9 @@ COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
+RUN apt-get update && apt-get install -y netcat-openbsd && rm -rf /var/lib/apt/lists/*
+
+
 COPY . .
-
-#RUN chmod a+x docker/app.sh
-
 
 CMD ["sh", "./backend/docker/start.sh"]

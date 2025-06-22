@@ -10,26 +10,47 @@ from file.models import *
 from anons.models import *
 from dotenv import load_dotenv
 load_dotenv()
+config = context.config
+
 # this is the Alembic Config object, which provides
 # access to the values within the .ini file in use.
-DB_HOST = os.getenv("DB_HOST")
-DB_PORT = os.getenv("DB_PORT")
-DB_USER = os.getenv("DB_USER")
-DB_PASS = os.getenv("DB_PASS")
-DB_NAME = os.getenv("DB_NAME")
+DB_HOST = os.getenv("DB_HOST", "localhost")
+DB_PORT = os.getenv("DB_PORT", "5432")
+DB_USER = os.getenv("DB_USER", "postgres")
+DB_PASS = os.getenv("DB_PASS", "12345")
+DB_NAME = os.getenv("DB_NAME", "postgres")
 
 
 
-config = context.config
+# если DB_HOST не указан явно, пробуем localhost
+
+print("DB_HOST =", DB_HOST)
+print("DB_PORT =", DB_PORT)
+print("DB_USER =", DB_USER)
+print("DB_PASS =", DB_PASS)
+print("DB_NAME =", DB_NAME)
+#sqlalchemy_url = (
+#    f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+#)
+
+#config.set_main_option('sqlalchemy.url', sqlalchemy_url)
+#print(sqlalchemy_url)
+
+
+
 section = config.config_ini_section
 config.set_section_option(section, "DB_HOST", DB_HOST)
 config.set_section_option(section, "DB_PORT", DB_PORT)
 config.set_section_option(section, "DB_USER", DB_USER)
 config.set_section_option(section, "DB_NAME", DB_NAME)
 config.set_section_option(section, "DB_PASS", DB_PASS)
-DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
-config.set_main_option('sqlalchemy.url', DATABASE_URL)
-config.set_main_option('sqlalchemy.url', f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+
+config.set_main_option(
+    'sqlalchemy.url',
+    f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+)
+print(f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
+
 #config.set_main_option('sqlalchemy.url', DATABASE_URL)
 target_metadata = Base.metadata
 # DATABASE_URL = f"postgresql+asyncpg://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"

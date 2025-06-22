@@ -1,18 +1,18 @@
-version: '3.8'
+
 
 services:
   db:
     image: postgres:15
     environment:
-      POSTGRES_USER: app_user
-      POSTGRES_PASSWORD: app_pass
-      POSTGRES_DB: app_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+      POSTGRES_DB: postgres   # исправил опечатку
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app_user"]
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -25,12 +25,12 @@ services:
     environment:
       DB_HOST: db
       DB_PORT: 5432
-      DB_NAME: app_db
-      DB_USER: app_user
-      DB_PASS: app_pass
+      DB_NAME: postgres
+      DB_USER: postgres
+      DB_PASS: 12345
     ports:
       - "8000:8000"
-    command: ["/start.sh"]
+    command: ["sh", "./backend/docker/start.sh"]
 
 volumes:
   postgres_data:
