@@ -4,7 +4,7 @@ WORKDIR /ksite/frontend
 COPY frontend/package*.json ./
 RUN npm install
 COPY frontend/src ./
-RUN npm run build
+RUN npm run build 
 
 FROM python:3.12.1
 

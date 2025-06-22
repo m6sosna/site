@@ -7,6 +7,7 @@ from auth.rolerouter import router as router_roles
 from auth.router import router as auth_router
 from fastapi.responses import FileResponse
 import os
+from backend.src.config import BASE_DIR
 from file.file_router import router as file_router
 from anons.router import router as anons_router
 app = FastAPI()
@@ -37,7 +38,9 @@ async def serve_index():
     return FileResponse(os.path.join("build", "index.html"))
 
 
-app.mount("/", StaticFiles(directory="build", html=True), name="frontend")
+BUILD_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../build"))  # поднимаемся к /ksite/build
+
+app.mount("/", StaticFiles(directory=BUILD_DIR, html=True), name="frontend")
 
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
