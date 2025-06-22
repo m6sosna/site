@@ -23,4 +23,4 @@ COPY . .
 #RUN chmod a+x docker/app.sh
 
 
-CMD ["sh", "/backend/docker/start.sh"]
+CMD ["sh", "./backend/docker/start.sh"]
