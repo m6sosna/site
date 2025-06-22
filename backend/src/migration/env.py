@@ -27,6 +27,8 @@ config.set_section_option(section, "DB_PORT", DB_PORT)
 config.set_section_option(section, "DB_USER", DB_USER)
 config.set_section_option(section, "DB_NAME", DB_NAME)
 config.set_section_option(section, "DB_PASS", DB_PASS)
+DATABASE_URL = f"postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}"
+config.set_main_option('sqlalchemy.url', DATABASE_URL)
 config.set_main_option('sqlalchemy.url', f'postgresql+psycopg2://{DB_USER}:{DB_PASS}@{DB_HOST}:{DB_PORT}/{DB_NAME}')
 #config.set_main_option('sqlalchemy.url', DATABASE_URL)
 target_metadata = Base.metadata
