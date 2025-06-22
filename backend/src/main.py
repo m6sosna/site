@@ -7,7 +7,7 @@ from auth.rolerouter import router as router_roles
 from auth.router import router as auth_router
 from fastapi.responses import FileResponse
 import os
-from backend.src.config import BASE_DIR
+from config import BASE_DIR
 from file.file_router import router as file_router
 from anons.router import router as anons_router
 app = FastAPI()
