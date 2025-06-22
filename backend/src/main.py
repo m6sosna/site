@@ -38,10 +38,8 @@ async def serve_index():
     return FileResponse(os.path.join("build", "index.html"))
 
 
-BUILD_DIR = os.path.abspath(os.path.join(BASE_DIR, "./../frontend/public"))  # поднимаемся к /ksite/build
-
-app.mount("/", StaticFiles(directory=BUILD_DIR, html=True), name="index.html")
-
+BUILD_DIR = os.path.abspath(os.path.join(BASE_DIR, "./../frontend/build"))
+app.mount("/", StaticFiles(directory=BUILD_DIR, html=True), name="frontend")
 app.include_router(
     fastapi_users.get_auth_router(auth_backend), prefix="/auth/jwt", tags=["auth"]
 )

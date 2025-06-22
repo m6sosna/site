@@ -3,7 +3,7 @@ FROM node:18 AS frontend-builder
 WORKDIR /ksite/frontend
 COPY frontend/package*.json ./
 RUN npm install
-COPY frontend/src ./
+COPY --from=frontend-builder /ksite/frontend/build /ksite/frontend/build
 RUN npm run build 
 
 FROM python:3.12.1
