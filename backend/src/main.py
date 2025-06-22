@@ -38,7 +38,7 @@ async def serve_index():
     return FileResponse(os.path.join("build", "index.html"))
 
 
-BUILD_DIR = os.path.abspath(os.path.join(BASE_DIR, "../../build"))  # поднимаемся к /ksite/build
+BUILD_DIR = os.path.abspath(os.path.join(BASE_DIR, "./frontend/build"))  # поднимаемся к /ksite/build
 
 app.mount("/", StaticFiles(directory=BUILD_DIR, html=True), name="frontend")
 
