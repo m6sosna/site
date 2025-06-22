@@ -1,3 +1,11 @@
+# Этап 1: собираем фронт
+FROM node:18 AS frontend-builder
+WORKDIR /frontend/src
+COPY frontend/package*.json ./
+RUN npm install
+COPY frontend/ ./
+RUN npm run build
+
 FROM python:3.12.1
 
 ARG DB_HOST
