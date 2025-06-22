@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-alembic -c backend/src/alembic.ini upgrade head
+alembic -c ./alembic.ini upgrade head
 
 cd src 
 
